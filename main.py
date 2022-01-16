@@ -9,6 +9,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 PARALLEL = 10
 
+
 def run_guess(word, words, possible_words):
     server = Server(word)
     guesser = pguess.Guess(words, possible_words)
@@ -27,7 +28,6 @@ def self_eval(guess_words, possible_words):
     with ProcessPoolExecutor(max_workers=PARALLEL) as executor:
         futures = []
         for word in possible_words:
-        # for word in ['crust']:
             futures.append(executor.submit(run_guess, word, guess_words, possible_words))
 
         for future in concurrent.futures.as_completed(futures):

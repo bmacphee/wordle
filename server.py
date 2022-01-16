@@ -20,18 +20,30 @@ class Color(Enum):
         return self.name[0]
 
 
+def compute_result(actual_word, guess_word):
+    result = [Color.BLACK] * len(actual_word)
+    positions_used = set()
+    for i, (guess, actual) in enumerate(zip(guess_word, actual_word)):
+        if guess == actual:
+            positions_used.add(i)
+            result[i] = Color.GREEN
+    marked_word = [c for c in actual_word]
+    for i in positions_used:
+        marked_word[i] = '_'
+    for i, (guess, actual) in enumerate(zip(guess_word, marked_word)):
+        if i in positions_used:
+            continue
+        if guess in marked_word:
+            result[i] = Color.ORANGE
+    return result
+
+
 class Server:
     def __init__(self, word):
         self.word = word
 
     def guess(self, word_guess):
-        result = [Color.BLACK] * len(self.word)
-        for i, (guess_char, word_char) in enumerate(zip(word_guess, self.word)):
-            if guess_char == word_char:
-                result[i] = Color.GREEN
-            elif guess_char in self.word:
-                result[i] = Color.ORANGE
-        return result
+        return compute_result(self.word, word_guess)
 
 
 def prompt():

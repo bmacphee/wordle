@@ -1,9 +1,10 @@
 from collections import defaultdict
 from copy import copy
 
-from server import Color
+from server import Color, compute_result
 
 ENABLE_FAST_GUESS = 0
+
 
 class Guess:
     """
@@ -74,8 +75,8 @@ class Guess:
 
         if not ENABLE_FAST_GUESS:
             return word_chosen
-        
-        threshold = 100
+
+        threshold = 20
         max_guess_elims = list(self.possible_words)[0], 0.0
         if len(self.possible_words) < threshold:
             for i, word in enumerate(self.possible_words):
@@ -87,8 +88,8 @@ class Guess:
         now_guess_probability = 1/len(self.possible_words)
         if now_guess_probability > difference_proportion:
             return max_guess_elims[0]
-
-
+        else:
+            return word_chosen
 
     def compute_expected(self, guess_word):
         results = self.compute_results(guess_word=guess_word)
@@ -170,27 +171,9 @@ class Guess:
     def compute_results(self, guess_word):
         results = defaultdict(set)
         for pw in self.possible_words:
-            result = self.compute_result(guess_word=guess_word, actual_word=pw)
+            result = compute_result(guess_word=guess_word, actual_word=pw)
             results[tuple(result)].add(pw)
         return results
-
-    @staticmethod
-    def compute_result(actual_word, guess_word):
-        result = [Color.BLACK] * len(actual_word)
-        positions_used = set()
-        for i, (guess, actual) in enumerate(zip(guess_word, actual_word)):
-            if guess == actual:
-                positions_used.add(i)
-                result[i] = Color.GREEN
-        marked_word = [c for c in actual_word]
-        for i in positions_used:
-            marked_word[i] = '_'
-        for i, (guess, actual) in enumerate(zip(guess_word, marked_word)):
-            if i in positions_used:
-                continue
-            if guess in marked_word:
-                result[i] = Color.ORANGE
-        return result
 
     @staticmethod
     def update_possible_words(possible_words, char_excludes, position_excludes, char_includes, char_matches):
