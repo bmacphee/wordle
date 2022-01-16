@@ -63,17 +63,23 @@ class Guess:
 
     def make_guess(self):
         self.guesses += 1
+        ties = set()
         max_elims = self.wordlist[0], 0.0
         for i, word in enumerate(self.wordlist):
             expected_elims = self.compute_expected(guess_word=word)
             if expected_elims > max_elims[1]:
+                ties.clear()
                 max_elims = word, expected_elims
+            elif expected_elims == max_elims[1]:
+                ties.add(word)
         word_chosen, expected_elims = max_elims
         #     if i % 10 == 0:
         #         print(f"computed {i}")
         # print(f"best first guess: {max_elims[0]}\n")
-        # TODO: at some elimination expectation - we are better off guessing a word from the possible word list, rather
-        # than the full word list
+        if word_chosen not in self.possible_words:
+            ties_in_possible_words = ties.intersection(self.possible_words)
+            if len(ties_in_possible_words):
+                return ties_in_possible_words.pop()
 
         if not ENABLE_FAST_GUESS:
             return word_chosen
