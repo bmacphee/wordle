@@ -3,6 +3,7 @@ from copy import copy
 
 from server import Color
 
+ENABLE_FAST_GUESS = 0
 
 class Guess:
     """
@@ -70,6 +71,10 @@ class Guess:
         # print(f"best first guess: {max_elims[0]}\n")
         # TODO: at some elimination expectation - we are better off guessing a word from the possible word list, rather
         # than the full word list
+
+        if not ENABLE_FAST_GUESS:
+            return word_chosen
+        
         threshold = 100
         max_guess_elims = list(self.possible_words)[0], 0.0
         if len(self.possible_words) < threshold:
@@ -83,7 +88,7 @@ class Guess:
         if now_guess_probability > difference_proportion:
             return max_guess_elims[0]
 
-        return word_chosen
+
 
     def compute_expected(self, guess_word):
         results = self.compute_results(guess_word=guess_word)
