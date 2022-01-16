@@ -76,6 +76,7 @@ class Guess:
         #     if i % 10 == 0:
         #         print(f"computed {i}")
         # print(f"best first guess: {max_elims[0]}\n")
+        # this implements a special case of the "FAST GUESS" which we know is always the correct choice
         if word_chosen not in self.possible_words:
             ties_in_possible_words = ties.intersection(self.possible_words)
             if len(ties_in_possible_words):
@@ -83,7 +84,8 @@ class Guess:
 
         if not ENABLE_FAST_GUESS:
             return word_chosen
-
+        # this is an approximation of a special case that could be properly computed somehow
+        # it's not completely correct probabilistically speaking, so it remains as an option for experimenting
         threshold = 20
         max_guess_elims = list(self.possible_words)[0], 0.0
         if len(self.possible_words) < threshold:
