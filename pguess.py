@@ -55,9 +55,11 @@ class Guess:
         self.char_includes = set()
         self.char_matches = {}
         self.guesses = 1
-        #self.next_guess = 'raise'  # computed from self.make_guess() on all possible words
-        self.next_guess = 'roate'
-        #self.next_guess = self.make_guess()
+        if len(wordlist) > len(possible_words):
+            self.next_guess = 'roate'  # computed from self.make_guess() on full word list
+        else:
+            self.next_guess = 'raise'  # computed from self.make_guess() on all possible answers
+        assert self.next_guess in wordlist
 
     def make_guess(self):
         self.guesses += 1
