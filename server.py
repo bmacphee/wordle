@@ -35,9 +35,8 @@ class Server:
 
 
 def prompt():
-    print(f"Enter 5-letter response to continue; b for BLACK/nomatch, g for green/match, o for orange/partial")
-    print(f"Example:")
-    print(f"  bgbog")
+    print(f"Enter 5-letter response to continue; b for BLACK/nomatch, g for GREEN/match, o for ORANGE/partial")
+    print(f"Example: bgbog")
 
 
 class RemoteServer():
