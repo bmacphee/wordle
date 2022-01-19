@@ -75,6 +75,12 @@ class Guess:
         # RAISE: 8261
         # ARISE: 8258
         # TRACE: 8214
+        #
+        # https://github.com/LaurentLessard/wordlesolver has a hard-mode solution that fully explores the solution space
+        # and seems to have proven that a greedy approach is not optimal
+        # it still seems possible to explore the whole solution space of guesses assuming there are some minimum
+        # average proportion of eliminations per step - perhaps it could be done with the small word list;
+        # the large one likely adds a few more orders of magnitude to the size of the graph of possible game states
 
     def make_guess(self):
         self.guesses += 1
