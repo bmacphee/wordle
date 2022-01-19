@@ -35,7 +35,7 @@ def compute_result(actual_word, guess_word):
             continue
         if guess in marked_word:
             result[i] = Color.ORANGE
-    return result
+    return tuple(result)
 
 
 class Server:
@@ -59,7 +59,7 @@ class RemoteServer():
             text = input()
 
             try:
-                result = [Color.from_char(c) for c in text]
+                result = tuple([Color.from_char(c) for c in text])
                 if len(result) == 5:
                     return result
             except ValueError:

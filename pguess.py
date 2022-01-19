@@ -55,10 +55,25 @@ class Guess:
         self.char_includes = set()
         self.char_matches = {}
         self.guesses = 1
+
+        self.make_guess()
         if len(wordlist) > len(possible_words):
             self.next_guess = 'roate'  # computed from self.make_guess() on full word list
         else:
-            self.next_guess = 'raise'  # computed from self.make_guess() on all possible answers
+            self.next_guess = 'raise'  # computed from self.make_guess() on all possible answers; trace is another
+            # SLATE: 8640
+            # STARE: 8487
+            # SANER: 8372
+            # SNARE: 8363
+            # SHARE: 8348
+            # STALE: 8337
+            # CRATE: 8322
+            # CRANE: 8297
+            # AROSE: 8275
+            # SAUTE: 8271
+            # RAISE: 8261
+            # ARISE: 8258
+            # TRACE: 8214
         assert self.next_guess in wordlist
 
     def make_guess(self):
@@ -72,10 +87,11 @@ class Guess:
                 max_elims = word, expected_elims
             elif expected_elims == max_elims[1]:
                 ties.add(word)
+            if i % 10 == 0:
+                print(f"computed {i}")
+        print(f"best first guess: {max_elims[0]}\n")
         word_chosen, expected_elims = max_elims
-        #     if i % 10 == 0:
-        #         print(f"computed {i}")
-        # print(f"best first guess: {max_elims[0]}\n")
+
         # this implements a special case of the "FAST GUESS" which we know is always the correct choice
         if word_chosen not in self.possible_words:
             ties_in_possible_words = ties.intersection(self.possible_words)
@@ -117,7 +133,6 @@ class Guess:
         # how many words can actually be eliminated if we choose {word}?
         elims = len(self.possible_words.difference(results[full_elim_key]))
         prob_full_elim = len(results[full_elim_key]) / len(self.possible_words)
-        prob_total = prob_full_elim
         full_elims_expected = prob_full_elim * elims
         results.pop(full_elim_key)
 
@@ -129,16 +144,7 @@ class Guess:
             # i.e. no word appearing in any result group could possibly be a correct guess for any other
             # the probability is fixed (we compute the exact proportion for this scenario)
             prob = len(words) / len(self.possible_words)
-            prob_total += prob
-            # the eliminations are opposite what is computed for the all-no-match group which is handled already
-            # (the words in this group are potential matches,
-            #  so the elim count is the difference between that and the whole set)
-            if Color.GREEN in result_group:
-                elims = self.elim_count(result_group, guess_word)
-            else:
-                # quicker way to do the elim count  TODO come back and optimize for the G case - there's probably a fast way
-                elims = len(self.possible_words) - len(words)
-
+            elims = len(self.possible_words) - len(words)
             expected = elims * prob
             possible_match_elims_expected += expected
         return full_elims_expected + possible_match_elims_expected + full_match_expected
@@ -148,12 +154,7 @@ class Guess:
         if result == [Color.GREEN] * 5:
             return
 
-        self.char_excludes = self.compute_exclude_characters(
-            self.char_matches, self.char_includes, self.position_excludes, self.char_excludes, last_guess, result
-        )
-        self.possible_words = self.update_possible_words(
-            self.possible_words, self.char_excludes, self.position_excludes, self.char_includes, self.char_matches
-        )
+        self.possible_words = self.update_possible_words(self.possible_words, result, last_guess)
         if len(self.possible_words) <= 2:
             self.guesses += 1
             self.next_guess = list(self.possible_words)[0]
@@ -161,57 +162,13 @@ class Guess:
         self.next_guess = self.make_guess()
         assert self.next_guess != last_guess
 
-    @staticmethod
-    def compute_exclude_characters(char_matches, char_includes, position_excludes, char_excludes, last_guess, result):
-        for i, r in enumerate(result):
-            char_result = last_guess[i]
-            if r == Color.GREEN:
-                char_matches[i] = char_result
-            if r == Color.ORANGE:
-                char_includes.add(char_result)
-                position_excludes[i] = char_result
-            if r == Color.BLACK:
-                position_excludes[i] = char_result
-                char_excludes.add(char_result)
-
-        # return the revised set of excludes
-        # (BLACK does not necessarily mean it's to be excluded because it might be a character that matched elsewhere)
-        return char_excludes - char_includes - set(char_matches.values())
-
     def compute_results(self, guess_word):
         results = defaultdict(set)
         for pw in self.possible_words:
             result = compute_result(guess_word=guess_word, actual_word=pw)
-            results[tuple(result)].add(pw)
+            results[result].add(pw)
         return results
 
     @staticmethod
-    def update_possible_words(possible_words, char_excludes, position_excludes, char_includes, char_matches):
-        # do definite eliminations
-        possible_words = {
-            word for word in possible_words
-            if not any(c in word for c in char_excludes) and
-            not any(word[idx] == c for idx, c in position_excludes.items())
-        }
-        # filter for possible matches
-        possible_words = {
-            word for word in possible_words if
-            all(c in word for c in char_includes) and
-            all(word[idx] == c for idx, c in char_matches.items())
-        }
-        return possible_words
-
-    def elim_count(self, result_group, guess_word):
-        new_char_matches = copy(self.char_matches)
-        new_char_includes = copy(self.char_includes)
-        new_position_includes = copy(self.position_excludes)
-        new_char_excludes = copy(self.char_excludes)
-        new_char_excludes = self.compute_exclude_characters(
-            new_char_matches, new_char_includes, new_position_includes, new_char_excludes, guess_word, result_group
-        )
-
-        new_possible_words = self.update_possible_words(
-            self.possible_words, new_char_excludes, new_position_includes, new_char_includes, new_char_matches
-        )
-
-        return len(self.possible_words) - len(new_possible_words)
+    def update_possible_words(possible_words, result, last_guess):
+        return {w for w in possible_words if compute_result(actual_word=w, guess_word=last_guess) == result}

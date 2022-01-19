@@ -16,7 +16,7 @@ def run_guess(word, words, possible_words):
     while True:
         guess_word = guesser.next_guess
         result = server.guess(guess_word)
-        if result == [Color.GREEN] * 5:
+        if result == (Color.GREEN,) * 5:
             return guess_word, guesser.guesses
         guesser.notify_result(result)
 
@@ -45,14 +45,14 @@ def interactive(guess_words, possible_words):
     while True:
         guess_word = guesser.next_guess
         result = server.guess(guess_word)
-        if result == [Color.GREEN] * 5:
+        if result == (Color.GREEN,) * 5:
             return guess_word, guesser.guesses
         guesser.notify_result(result)
 
 
 if __name__ == '__main__':
     choice = input("Run test? [N/y] ")
-    with open("wordle.txt") as wordlist:
+    with open("all_words.txt") as wordlist:
         guess_words = wordlist.read().splitlines()
 
     with open("possible.txt") as possible:
