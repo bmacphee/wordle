@@ -9,7 +9,7 @@ Never requires more than five guesses.  A performance analysis is pictured in th
 There are 2315 words in the [challenge word list](possible.txt).  The above chart displays a histogram
 of guess counts for each.
 
-The full word list that is considered for valid guesses is [here](all_words.txt)
+The full word list that is considered for valid guesses is [here](all_valid_guesses.txt)
 
 
 ## Getting Started
