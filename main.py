@@ -52,7 +52,7 @@ def interactive(guess_words, possible_words):
 
 if __name__ == '__main__':
     choice = input("Run test? [N/y] ")
-    with open("all_valid_guesses.txt") as wordlist:
+    with open("possible.txt") as wordlist:
         guess_words = wordlist.read().splitlines()
 
     with open("possible.txt") as possible:

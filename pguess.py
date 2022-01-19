@@ -55,8 +55,6 @@ class Guess:
         self.char_includes = set()
         self.char_matches = {}
         self.guesses = 1
-
-        self.make_guess()
         if len(wordlist) > len(possible_words):
             self.next_guess = 'roate'  # computed from self.make_guess() on full word list
         else:
@@ -87,9 +85,9 @@ class Guess:
                 max_elims = word, expected_elims
             elif expected_elims == max_elims[1]:
                 ties.add(word)
-            if i % 10 == 0:
-                print(f"computed {i}")
-        print(f"best first guess: {max_elims[0]}\n")
+        #     if i % 10 == 0:
+        #         print(f"computed {i}")
+        # print(f"best first guess: {max_elims[0]}\n")
         word_chosen, expected_elims = max_elims
 
         # this implements a special case of the "FAST GUESS" which we know is always the correct choice
