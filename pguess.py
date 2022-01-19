@@ -55,24 +55,26 @@ class Guess:
         self.char_includes = set()
         self.char_matches = {}
         self.guesses = 1
-        if len(wordlist) > len(possible_words):
-            self.next_guess = 'roate'  # computed from self.make_guess() on full word list
-        else:
-            self.next_guess = 'raise'  # computed from self.make_guess() on all possible answers; trace is another
-            # SLATE: 8640
-            # STARE: 8487
-            # SANER: 8372
-            # SNARE: 8363
-            # SHARE: 8348
-            # STALE: 8337
-            # CRATE: 8322
-            # CRANE: 8297
-            # AROSE: 8275
-            # SAUTE: 8271
-            # RAISE: 8261
-            # ARISE: 8258
-            # TRACE: 8214
-        assert self.next_guess in wordlist
+
+        # seems to work best on either guess list, but has a worse worst-case
+        # TODO: figure out how to verify the best guess given a word list
+        self.next_guess = 'slate'  # computed from self.make_guess() on all possible answers; trace is another
+        # from https://github.com/ttop/wordle_starting_guess
+        # (this solution has interesting experiments, but isn't necessarily proven)
+        # the best option is to look ahead some number of turns (maybe all of them) to determine the right guesses
+        # SLATE: 8640
+        # STARE: 8487
+        # SANER: 8372
+        # SNARE: 8363
+        # SHARE: 8348
+        # STALE: 8337
+        # CRATE: 8322
+        # CRANE: 8297
+        # AROSE: 8275
+        # SAUTE: 8271
+        # RAISE: 8261
+        # ARISE: 8258
+        # TRACE: 8214
 
     def make_guess(self):
         self.guesses += 1
