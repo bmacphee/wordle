@@ -15,37 +15,26 @@ class Guess:
     already know to reduce the combinations required)
     for each of the remaining words, evaluate the result and count; guess = cat
     bbb => { dog, pig, fly, bee, fox } 62.5%, 12.5% for others
-    bbg => { }
-    obg => { ant } <= orange for one letter may be treated as non-matching for probability until a better model is made
-    bgg => {}
-    ggg => {cat}
-    bgb => {}
-    gbg => {}
-    gbb => {cow}
+    bbg => {} 0%
+    obg => { ant }
+    bgg => {} 0%
+    ggg => { cat }
+    bgb => {} 0%
+    gbg => {} 0%
+    gbb => { cow }
 
     Expected elim(cat) = (.625 * 5 words + .125 * 7 + .125 * 7 + .125*7) = 5.75
     Expected elim(dog) = 0.5 * 4 + 0.25 * 6 + 0.125 * 7 * 2 = 5.25
-    bbb => {fly, bee, cat, ant}
-    bgb => {cow, fox}
-    bbg => {pig}
-    ggg => {dog}
 
-    pig
+    we should choose the guess that is likely to eliminate the most words each turn
+    this may not be optimal because we might be "cornering" ourselves into a poor guess for next turn but looking ahead
+    quickly gets expensive (it may be possible to generate all possible game states with fast enough hardware and large
+    enough memory, but this is not done here, nor are shorter look-aheads)
 
+    special case:
+    bbb -> eliminations computed differently since the size of the bbb group is equal to the words eliminated
 
-
-
-    if we guess cat, these are the possible outcomes.  the exact match outcome eliminates possible_words-1 with low
-    probability but all guesses have this property, so we can ignore it
-    what is the best outcome?  we should choose the guess that eliminates the most words.
-    bbb -> easy to compute since the count of bbb results is identical to the words eliminated; we can't do anything more
-    with that information (maybe we can have a data structure that lets use quickly know the word count for completely distinct words?
-    it probably looks like some kind of graph since many words may be related through others?)
-    [cat, ant, |   dog, cow,  |   pig, | bee | fox fly, ]
-
-    any o matches eliminate all words that are missing that letter. g characters exclude all words that have any other character in that position
-
-    if a letter is g, we don't necessarily get an o for other identical characters out of position but present elsewhere
+    for the other cases, the words eliminated is the inverse relative to the remaining possible words
     """
     def __init__(self, wordlist, possible_words):
         self.wordlist = wordlist
@@ -58,7 +47,7 @@ class Guess:
 
         # seems to work best on either guess list, but has a worse worst-case
         # TODO: figure out how to verify the best guess given a word list
-        self.next_guess = 'slate'  # computed from self.make_guess() on all possible answers; trace is another
+        self.next_guess = 'roate'  # 'roate' was computed from self.make_guess()
         # from https://github.com/ttop/wordle_starting_guess
         # (this solution has interesting experiments, but isn't necessarily proven)
         # the best option is to look ahead some number of turns (maybe all of them) to determine the right guesses
@@ -118,7 +107,7 @@ class Guess:
             return word_chosen
 
     def compute_expected(self, guess_word):
-        results = self.compute_results(guess_word=guess_word)
+        results = compute_results(self.possible_words, guess_word=guess_word)
         full_match_key = (Color.GREEN,) * len(guess_word)
         # this would actually increase the score of some guesses slightly - so sometimes it is best to guess a word
         full_match_prob = len(results[full_match_key]) / len(self.possible_words)
@@ -162,13 +151,15 @@ class Guess:
         self.next_guess = self.make_guess()
         assert self.next_guess != last_guess
 
-    def compute_results(self, guess_word):
-        results = defaultdict(set)
-        for pw in self.possible_words:
-            result = compute_result(guess_word=guess_word, actual_word=pw)
-            results[result].add(pw)
-        return results
 
     @staticmethod
     def update_possible_words(possible_words, result, last_guess):
         return {w for w in possible_words if compute_result(actual_word=w, guess_word=last_guess) == result}
+
+
+def compute_results(possible_words, guess_word):
+    results = defaultdict(set)
+    for pw in possible_words:
+        result = compute_result(guess_word=guess_word, actual_word=pw)
+        results[result].add(pw)
+    return results
