@@ -1,10 +1,60 @@
-from enum import Enum
+from enum import IntEnum
+
+RESULT_MAP = {}
+RESULTS = [(), ]
+RESULT_MATRIX = None
+TO_RESULT = {}
 
 
-class Color(Enum):
-    BLACK = 1
-    ORANGE = 2
-    GREEN = 3
+def generate(elements):
+    new_elements = []
+    for e in elements:
+        new_elements.extend((e + (Color.BLACK,), e + (Color.GREEN,), e + (Color.ORANGE,)))
+    return new_elements
+
+
+def init_maps():
+    """
+    B = 0
+    O = 1
+    G = 2
+    int_repr = COLOR5*3^4 + COLOR4*3^3 + COLOR3*3^2 + COLOR2*3^1 + COLOR1*3^0
+    BBBBB = 0 + 0 + 0 + 0 + 0 = 0
+    BBBBO = 0 + 0 + 0 + 0 + 1 = 1
+    BBBBG = 0 + 0 + 0 + 0 + 2 = 2
+    BBBOB = 0 + 0 + 0 + 3 + 0 = 3
+    BBBOO = 0 + 0 + 0 + 3 + 1 = 4
+    BBBOG = 0 + 0 + 0 + 3 + 2 = 5
+    BBBGB = 0 + 0 + 0 + 6 + 0 = 6
+    """
+    global RESULTS, RESULT_MAP, RESULT_MATRIX, TO_RESULT
+    for _ in range(5):
+        RESULTS = generate(RESULTS)
+
+    for r in RESULTS:
+        RESULT_MAP[r] = to_int(r)
+
+    for r, i in RESULT_MAP.items():
+        TO_RESULT[i] = r
+
+    with open("all_valid_guesses.txt") as wordlist:
+        guess_words = wordlist.read().splitlines()
+
+    with open("possible.txt") as solutions:
+        solution_words = solutions.read().splitlines()
+
+    RESULT_MATRIX = [[-1 for _ in range(len(solution_words))] for _ in range(len(guess_words))]
+
+    for i, g in enumerate(guess_words):
+        for j, p in enumerate(solution_words):
+            RESULT_MATRIX[i][j] = to_int(compute_result(g, p))
+    # print('done')
+
+
+class Color(IntEnum):
+    BLACK = 0
+    ORANGE = 1
+    GREEN = 2
 
     @staticmethod
     def from_char(char):
@@ -41,6 +91,10 @@ def compute_result(actual_word, guess_word):
     return tuple(result)
 
 
+def to_int(r):
+    return r[0] * 3 ** 4 + r[1] * 3 ** 3 + r[2] * 3 ** 2 + r[3] * 3 + r[4] * 1
+
+
 class Server:
     def __init__(self, word):
         self.word = word
@@ -67,3 +121,8 @@ class RemoteServer():
                     return result
             except ValueError:
                 pass
+
+init_maps()
+
+#if __name__ == "__main__":
+#    init_maps()
