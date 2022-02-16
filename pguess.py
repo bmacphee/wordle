@@ -1,5 +1,4 @@
 from collections import defaultdict
-from copy import copy
 
 from server import Color, compute_result
 
@@ -58,24 +57,9 @@ class Guess:
 
         # seems to work best on either guess list, but has a worse worst-case
         # TODO: figure out how to verify the best guess given a word list
-        self.next_guess = 'slate'  # computed from self.make_guess() on all possible answers; trace is another
-        # from https://github.com/ttop/wordle_starting_guess
-        # (this solution has interesting experiments, but isn't necessarily proven)
+        self.next_guess = 'slate'
+        # 'roate' is computed from self.make_guess() on all possible answers; trace is another
         # the best option is to look ahead some number of turns (maybe all of them) to determine the right guesses
-        # SLATE: 8640
-        # STARE: 8487
-        # SANER: 8372
-        # SNARE: 8363
-        # SHARE: 8348
-        # STALE: 8337
-        # CRATE: 8322
-        # CRANE: 8297
-        # AROSE: 8275
-        # SAUTE: 8271
-        # RAISE: 8261
-        # ARISE: 8258
-        # TRACE: 8214
-        #
         # https://github.com/LaurentLessard/wordlesolver has a hard-mode solution that fully explores the solution space
         # and seems to have proven that a greedy approach is not optimal
         # it still seems possible to explore the whole solution space of guesses assuming there are some minimum
@@ -86,7 +70,8 @@ class Guess:
         self.guesses += 1
         ties = set()
         max_elims = self.wordlist[0], 0.0
-        for i, word in enumerate(self.wordlist):
+
+        for word in self.wordlist:
             expected_elims = self.compute_expected(guess_word=word)
             if expected_elims > max_elims[1]:
                 ties.clear()
@@ -96,6 +81,8 @@ class Guess:
         #     if i % 10 == 0:
         #         print(f"computed {i}")
         # print(f"best first guess: {max_elims[0]}\n")
+        # print(sorted(expected_elim_map.items(), key=itemgetter(1), reverse=True))
+        # exit(0)
         word_chosen, expected_elims = max_elims
 
         # this implements a special case of the "FAST GUESS" which we know is always the correct choice
@@ -124,36 +111,14 @@ class Guess:
             return word_chosen
 
     def compute_expected(self, guess_word):
+        expected_elims = 0
         results = self.compute_results(guess_word=guess_word)
-        full_match_key = (Color.GREEN,) * len(guess_word)
-        # this would actually increase the score of some guesses slightly - so sometimes it is best to guess a word
-        full_match_prob = len(results[full_match_key]) / len(self.possible_words)
-        full_match_expected = full_match_prob * (len(self.possible_words) - 1)  # can only ever be one full match
-
-        results.pop(full_match_key, None)
-        # E(full_elims) = P(full_elim) * count(full_elim)
-        # E(full_elims) = count(full_elim)/count(all) * count(full_elim)
-        # i.e 50 bbbbb results, 100 possible words -> 50 * 50 / 100 = 250/100 = 25
-        full_elim_key = (Color.BLACK,) * 5
-
-        # how many words can actually be eliminated if we choose {word}?
-        elims = len(self.possible_words.difference(results[full_elim_key]))
-        prob_full_elim = len(results[full_elim_key]) / len(self.possible_words)
-        full_elims_expected = prob_full_elim * elims
-        results.pop(full_elim_key)
-
-        possible_match_elims_expected = 0
-
         for result_group, words in results.items():
-            assert Color.GREEN in result_group or Color.ORANGE in result_group
-            # for each of these groups, they are the only words that match, otherwise they'd appear in a different group
-            # i.e. no word appearing in any result group could possibly be a correct guess for any other
-            # the probability is fixed (we compute the exact proportion for this scenario)
             prob = len(words) / len(self.possible_words)
             elims = len(self.possible_words) - len(words)
             expected = elims * prob
-            possible_match_elims_expected += expected
-        return full_elims_expected + possible_match_elims_expected + full_match_expected
+            expected_elims += expected
+        return expected_elims
 
     def notify_result(self, result):
         last_guess = self.next_guess
