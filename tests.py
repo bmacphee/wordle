@@ -42,6 +42,11 @@ def test_h():
     assert (Color.BLACK, Color.BLACK, Color.ORANGE, Color.GREEN, Color.ORANGE) == result
 
 
+def test_i():
+    result = compute_result('bloat', 'abbey')
+    assert (Color.ORANGE, Color.ORANGE, Color.BLACK, Color.BLACK, Color.BLACK) == result
+
+
 def test_j():
     possible = ['waste', 'asset', 'beset', 'roate', 'raise']
     g = Guess(possible, possible)
