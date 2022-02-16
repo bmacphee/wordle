@@ -51,13 +51,16 @@ class Guess:
         ties = set()
         max_elims = self.wordlist[0], 0.0
 
-        for word in self.wordlist:
-            expected_elims = self.compute_expected(guess_word=word)
-            if expected_elims > max_elims[1]:
+        import numpy as np
+        from simulations import get_entropies
+        entropies = enumerate(get_entropies(self.wordlist, self.possible_words, np.ones(len(self.possible_words))))
+
+        for i, entropy in entropies:
+            if entropy > max_elims[1]:
                 ties.clear()
-                max_elims = word, expected_elims
-            elif expected_elims == max_elims[1]:
-                ties.add(word)
+                max_elims = self.wordlist[i], entropy
+            elif entropy == max_elims[1]:
+                ties.add(self.wordlist[i])
         #     if i % 10 == 0:
         #         print(f"computed {i}")
         # print(f"best first guess: {max_elims[0]}\n")
