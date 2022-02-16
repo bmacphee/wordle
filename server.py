@@ -22,19 +22,22 @@ class Color(Enum):
 
 def compute_result(actual_word, guess_word):
     result = [Color.BLACK] * len(actual_word)
-    positions_used = set()
+    marked_actual = [c for c in actual_word]
     for i, (guess, actual) in enumerate(zip(guess_word, actual_word)):
         if guess == actual:
-            positions_used.add(i)
             result[i] = Color.GREEN
-    marked_word = [c for c in actual_word]
-    for i in positions_used:
-        marked_word[i] = '_'
-    for i, (guess, actual) in enumerate(zip(guess_word, marked_word)):
-        if i in positions_used:
+            marked_actual[i] = '_'
+
+    for i, guess in enumerate(guess_word):
+        if result[i] == Color.GREEN:
             continue
-        if guess in marked_word:
+        try:
+            idx = marked_actual.index(guess)
+            marked_actual[idx] = '_'
             result[i] = Color.ORANGE
+        except ValueError:
+            pass
+
     return tuple(result)
 
 
